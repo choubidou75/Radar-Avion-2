@@ -563,12 +563,12 @@ aircraft = states.map(s => ({
   icao24: s.hex || '',
   callsign: (s.flight || '').trim() || s.r || '—',
   country: s.desc || '—',
-  lon: s.lon,
-  lat: s.lat,
+  lon: parseFloat(s.lon),
+  lat: parseFloat(s.lat),
   altitude: s.alt_baro != null ? Math.round(s.alt_baro) : null,
   onGround: false,
   velocity: s.gs != null ? Math.round(s.gs * 1.852) : null,
-  heading: s.track,
+  heading: parseFloat(s.track),
   vertRate: s.geom_rate != null ? s.geom_rate.toFixed(0) : null,
 
   model: s.t || null,
@@ -580,7 +580,11 @@ aircraft = states.map(s => ({
   enriched: false,
   enrichLoading: false,
 }))
-    .filter(a => a.lat && a.lon && !a.onGround)
+    .filter(a =>
+  Number.isFinite(a.lat) &&
+  Number.isFinite(a.lon) &&
+  !a.onGround
+)
     .map(a => ({
       ...a,
       dist: distKm(myLat, myLon, a.lat, a.lon),
@@ -920,6 +924,8 @@ function drawRadar() {
   ctx.lineTo(cx+R*Math.cos(sweepRad), cy+R*Math.sin(sweepRad));
   ctx.strokeStyle = 'rgba(255,179,71,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
 
+console.log("Aircraft sample", aircraft[0]);
+  
   // Aircraft
   aircraft.forEach(a => {
     const bRad = (a.brg - 90) * Math.PI/180;
