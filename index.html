@@ -553,28 +553,33 @@ async function fetchAircraft() {
 
   // Bounding box (≈ 1.5° ≈ 165 km each side for safety)
   const d = 1.3;
-  const url = `https://shrill-hat-9629.clmferreri.workers.dev/?lamin=${myLat-d}&lomin=${myLon-d*1.5}&lamax=${myLat+d}&lomax=${myLon+d*1.5}`;
-
-  try {
+const url =`https://shrill-hat-9629.clmferreri.workers.dev/?lat=${myLat}&lon=${myLon}&radius=54`;  try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const states = data.states || [];
+ const states = data.ac || [];
 
-    aircraft = states.map(s => ({
-      icao24: s[0] || '',
-      callsign: (s[1] || '').trim() || '—',
-      country: s[2] || '—',
-      lon: s[5], lat: s[6],
-      altitude: s[7] != null ? Math.round(s[7]) : (s[13] != null ? Math.round(s[13]) : null),
-      onGround: s[8],
-      velocity: s[9] != null ? Math.round(s[9] * 3.6) : null,
-      heading: s[10],
-      vertRate: s[11] != null ? s[11].toFixed(1) : null,
-      // Enriched — filled async
-      model: null, origin: null, destination: null, flightType: null,
-      enriched: false, enrichLoading: false,
-    }))
+aircraft = states.map(s => ({
+  icao24: s.hex || '',
+  callsign: (s.flight || '').trim() || s.r || '—',
+  country: s.desc || '—',
+  lon: s.lon,
+  lat: s.lat,
+  altitude: s.alt_baro != null ? Math.round(s.alt_baro) : null,
+  onGround: false,
+  velocity: s.gs != null ? Math.round(s.gs * 1.852) : null,
+  heading: s.track,
+  vertRate: s.geom_rate != null ? s.geom_rate.toFixed(0) : null,
+
+  model: s.t || null,
+  registration: s.r || null,
+  origin: null,
+  destination: null,
+  flightType: null,
+
+  enriched: false,
+  enrichLoading: false,
+}))
     .filter(a => a.lat && a.lon && !a.onGround)
     .map(a => ({
       ...a,
