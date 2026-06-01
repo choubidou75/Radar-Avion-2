@@ -553,7 +553,7 @@ async function fetchAircraft() {
 
   // Bounding box (≈ 1.5° ≈ 165 km each side for safety)
   const d = 1.3;
-  const url = `https://opensky-network.org/api/states/all?lamin=${myLat-d}&lomin=${myLon-d*1.5}&lamax=${myLat+d}&lomax=${myLon+d*1.5}`;
+  const url = `https://shrill-hat-9629.clmferreri.workers.dev/?lamin=${myLat-d}&lomin=${myLon-d*1.5}&lamax=${myLat+d}&lomax=${myLon+d*1.5}`;
 
   try {
     const res = await fetch(url);
