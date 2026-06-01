@@ -940,8 +940,7 @@ console.log("Aircraft sample", aircraft[0]);
               : isSel ? '#ffb347' : '#ffb34799';
 
     // Glow
-    const grd = ctx.createRadialGradient(bx,by,0,bx,by,isSel?16:10);
-    grd.addColorStop(0, col.replace(')',',0.4)').replace('rgb','rgba').replace('#',''));
+
     // simpler:
     ctx.beginPath(); ctx.arc(bx,by,isSel?14:9,0,Math.PI*2);
     ctx.fillStyle = isSel ? 'rgba(255,179,71,0.12)' : 'rgba(255,179,71,0.07)';
