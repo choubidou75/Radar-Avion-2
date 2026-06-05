@@ -504,6 +504,7 @@ canvas#radar {
 // ─────────────────────────────────────────────
 let myLat = null, myLon = null, myAddress = '';
 let map = null;
+let markers = {};
 let aircraft = [];
 let selectedIcao = null;
 let radarAngle = 0;
@@ -619,6 +620,7 @@ aircraft = states.map(s => ({
     setPill('api', 'on', `${aircraft.length} AÉRONEFS`);
     document.getElementById('ac-count').textContent = aircraft.length;
     renderList();
+    updateMapMarkers();
     drawRadar();
 
     // Enrich top-20 (nearest first)
@@ -863,7 +865,59 @@ function renderDetail() {
   `;
   box.classList.add('open');
 }
+function updateMapMarkers() {
 
+  if (!map) return;
+
+  Object.values(markers).forEach(m => {
+    map.removeLayer(m);
+  });
+
+  markers = {};
+
+  aircraft.forEach(a => {
+
+    const color =
+      a.flightType === 'private'
+        ? '#ff4d4d'
+        : '#4dc8ff';
+
+    const symbol =
+      a.flightType === 'private'
+        ? '🛩'
+        : '✈';
+
+    const marker = L.marker(
+      [a.lat, a.lon],
+      {
+        icon: L.divIcon({
+          className: '',
+          html: `
+            <div style="
+              color:${color};
+              font-size:18px;
+              transform:rotate(${a.heading || 0}deg);
+              text-shadow:0 0 8px ${color};
+            ">
+              ${symbol}
+            </div>
+          `
+        })
+      }
+    );
+
+    marker.addTo(map);
+
+    marker.bindTooltip(
+      a.callsign,
+      {
+        permanent:false
+      }
+    );
+
+    markers[a.icao24] = marker;
+  });
+}
 // ─────────────────────────────────────────────
 //  RADAR
 // ─────────────────────────────────────────────
@@ -872,9 +926,24 @@ function showRadar() {
   const c = document.getElementById('radar');
   c.style.display = 'block';
   resizeRadar();
-  if (!map) {
-  map = L.map('map').setView([myLat, myLon],9);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+ if (!map) {
+
+  map = L.map('map').setView([myLat, myLon], 9);
+
+  L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+  ).addTo(map);
+
+  L.circle(
+    [myLat, myLon],
+    {
+      radius: 100000,
+      color: '#ffb347',
+      fill: false,
+      weight: 1
+    }
+  ).addTo(map);
+
 }
   if (!rafId) animateRadar();
   document.getElementById('refresh-btn').disabled = false;
