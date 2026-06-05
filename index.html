@@ -875,8 +875,8 @@ function updateMapMarkers() {
 
   markers = {};
 
-  aircraft.forEach(a => {
-
+aircraft.forEach(a => {
+  return;
     const color =
       a.flightType === 'private'
         ? '#ff4d4d'
@@ -975,11 +975,7 @@ function drawRadar() {
 
   ctx.clearRect(0,0,W,H);
 
-  // BG
-  const bg = ctx.createRadialGradient(cx,cy,0,cx,cy,R);
-  bg.addColorStop(0,'#120e00'); bg.addColorStop(1,'#060400');
-  ctx.fillStyle = bg;
-  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+ // plus de fond noir
 
   // Rings + labels
   [0.25,0.5,0.75,1].forEach(f => {
@@ -1026,14 +1022,9 @@ function drawRadar() {
 
 // console.log("Aircraft sample", aircraft[0]);
   
-  // Aircraft
-  ctx.fillStyle = "red";
-ctx.beginPath();
-ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-ctx.fill();
 
 // console.log("Aircraft count", aircraft.length);
-  aircraft.forEach(a => {
+  
     const bRad = (a.brg - 90) * Math.PI/180;
     const d = (a.dist/RADIUS_KM)*R;
     const bx = cx + d*Math.cos(bRad);
