@@ -139,7 +139,12 @@ body::after {
   background: radial-gradient(ellipse 60% 60% at 50% 50%, #120e00 0%, var(--bg) 100%);
 }
 
-canvas#radar { display: block; image-rendering: crisp-edges; }
+canvas#radar {
+  display: block;
+  image-rendering: crisp-edges;
+  border: 5px solid red !important;
+  background: blue !important;
+}
 
 .radar-corner {
   position: absolute;
@@ -876,7 +881,7 @@ function drawRadar() {
   const ctx = c.getContext('2d');
   const W = c.width, H = c.height;
   const cx = W/2, cy = H/2, R = W*0.46;
-  console.log("Radar size", W, H);
+  // console.log("Radar size", W, H);
 
   ctx.clearRect(0,0,W,H);
 
@@ -929,7 +934,7 @@ function drawRadar() {
   ctx.lineTo(cx+R*Math.cos(sweepRad), cy+R*Math.sin(sweepRad));
   ctx.strokeStyle = 'rgba(255,179,71,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
 
-console.log("Aircraft sample", aircraft[0]);
+// console.log("Aircraft sample", aircraft[0]);
   
   // Aircraft
   ctx.fillStyle = "red";
@@ -937,7 +942,7 @@ ctx.beginPath();
 ctx.arc(cx, cy, 5, 0, Math.PI * 2);
 ctx.fill();
 
-console.log("Aircraft count", aircraft.length);
+// console.log("Aircraft count", aircraft.length);
   aircraft.forEach(a => {
     const bRad = (a.brg - 90) * Math.PI/180;
     const d = (a.dist/RADIUS_KM)*R;
