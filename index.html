@@ -174,6 +174,7 @@ canvas#radar { display: block; image-rendering: crisp-edges; }
   flex-direction: column;
   background: var(--panel);
   overflow: hidden;
+  min-height: 0;
 }
 
 .panel-header {
@@ -202,6 +203,7 @@ canvas#radar { display: block; image-rendering: crisp-edges; }
 .ac-list {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -563,12 +565,14 @@ aircraft = states.map(s => ({
   icao24: s.hex || '',
   callsign: (s.flight || '').trim() || s.r || '—',
   country: s.desc || '—',
-  lon: parseFloat(s.lon),
-  lat: parseFloat(s.lat),
+  lat: Number(s.lat),
+  lon: Number(s.lon),
   altitude: s.alt_baro != null ? Math.round(s.alt_baro) : null,
   onGround: false,
   velocity: s.gs != null ? Math.round(s.gs * 1.852) : null,
-  heading: parseFloat(s.track),
+  heading: Number.isFinite(parseFloat(s.track))
+  ? parseFloat(s.track)
+  : null,
   vertRate: s.geom_rate != null ? s.geom_rate.toFixed(0) : null,
 
   model: s.t || null,
@@ -872,6 +876,7 @@ function drawRadar() {
   const ctx = c.getContext('2d');
   const W = c.width, H = c.height;
   const cx = W/2, cy = H/2, R = W*0.46;
+  console.log("Radar size", W, H);
 
   ctx.clearRect(0,0,W,H);
 
@@ -927,12 +932,25 @@ function drawRadar() {
 console.log("Aircraft sample", aircraft[0]);
   
   // Aircraft
+  ctx.fillStyle = "red";
+ctx.beginPath();
+ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+ctx.fill();
+
+console.log("Aircraft count", aircraft.length);
   aircraft.forEach(a => {
     const bRad = (a.brg - 90) * Math.PI/180;
     const d = (a.dist/RADIUS_KM)*R;
     const bx = cx + d*Math.cos(bRad);
     const by = cy + d*Math.sin(bRad);
     const isSel = a.icao24 === selectedIcao;
+    if (
+  !Number.isFinite(a.dist) ||
+  !Number.isFinite(a.brg)
+) {
+  console.log("BAD AIRCRAFT", a);
+  return;
+}
 
     // Colour by type
     const col = a.flightType === 'commercial' ? '#4dc8ff'
@@ -956,10 +974,10 @@ console.log("Aircraft sample", aircraft[0]);
     }
 
     // Blip
-    ctx.beginPath(); ctx.arc(bx,by,isSel?4:2.5,0,Math.PI*2);
-    ctx.fillStyle = col;
-    ctx.shadowBlur=10; ctx.shadowColor=col; ctx.fill();
-    ctx.shadowBlur=0;
+    ctx.beginPath();
+    ctx.arc(bx,by,isSel?6:4,0,Math.PI*2);
+    ctx.fillStyle = "#ff0000";
+    ctx.fill();
 
     // Label
     ctx.font = `${W*0.02}px 'DM Mono'`;
