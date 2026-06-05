@@ -6,6 +6,8 @@
 <title>Radar Aérien</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root {
   --amber: #ffb347;
@@ -131,7 +133,19 @@ body::after {
 }
 
 /* ── RADAR ── */
-.radar-wrap {
+#map {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+#radar {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+  .radar-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,8 +156,6 @@ body::after {
 canvas#radar {
   display: block;
   image-rendering: crisp-edges;
-  border: 5px solid red !important;
-  background: blue !important;
 }
 
 .radar-corner {
@@ -459,6 +471,7 @@ canvas#radar {
         Rayon de détection : 100 km
       </div>
     </div>
+    <div id="map"></div>
     <canvas id="radar" style="display:none;"></canvas>
     <div class="radar-corner tl" id="rc-tl"></div>
     <div class="radar-corner tr" id="rc-tr"></div>
@@ -490,6 +503,7 @@ canvas#radar {
 //  STATE
 // ─────────────────────────────────────────────
 let myLat = null, myLon = null, myAddress = '';
+let map = null;
 let aircraft = [];
 let selectedIcao = null;
 let radarAngle = 0;
@@ -858,6 +872,10 @@ function showRadar() {
   const c = document.getElementById('radar');
   c.style.display = 'block';
   resizeRadar();
+  if (!map) {
+  map = L.map('map').setView([myLat, myLon],9);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+}
   if (!rafId) animateRadar();
   document.getElementById('refresh-btn').disabled = false;
 }
@@ -865,8 +883,9 @@ function showRadar() {
 function resizeRadar() {
   const wrap = document.getElementById('radar-wrap');
   const c = document.getElementById('radar');
-  const size = Math.min(wrap.clientWidth, wrap.clientHeight) * 0.86;
-  c.width = size; c.height = size;
+
+  c.width = wrap.clientWidth;
+  c.height = wrap.clientHeight;
 }
 
 function animateRadar() {
@@ -880,7 +899,9 @@ function drawRadar() {
   if (!c || c.style.display === 'none') return;
   const ctx = c.getContext('2d');
   const W = c.width, H = c.height;
-  const cx = W/2, cy = H/2, R = W*0.46;
+  const cx = W/2;
+  const cy = H/2;
+  const R = Math.min(W,H) * 0.46;
   // console.log("Radar size", W, H);
 
   ctx.clearRect(0,0,W,H);
